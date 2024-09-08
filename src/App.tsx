@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Dashboard/Layout';
 import Users from './pages/Users';
+import Matching from './pages/Matching';
 
 const App = () => (
   <Layout>
@@ -13,6 +14,7 @@ const App = () => (
         path='/helpers'
         element={<Users roleName='Helper' heading='Helpers Management' />}
       />
+      <Route path='/matching' element={<Matching />} />
     </Routes>
   </Layout>
 );

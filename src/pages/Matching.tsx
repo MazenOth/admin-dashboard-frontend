@@ -17,14 +17,12 @@ import {
   assignHelper,
   unassignHelper,
 } from '../services/api';
-import { User } from '../types';
+import { User, MatchedUser } from '../types';
 
 const Matching: React.FC = () => {
   const [unmatchedClients, setUnmatchedClients] = useState<User[]>([]);
   const [potentialHelpers, setPotentialHelpers] = useState<User[]>([]);
-  const [matchedUsers, setMatchedUsers] = useState<
-    { client: User; helper: User }[]
-  >([]);
+  const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
@@ -236,25 +234,30 @@ const Matching: React.FC = () => {
       {/* Matched Users Section */}
       <VStack spacing={4} align='start'>
         <Text fontWeight='bold'>Current Matches:</Text>
-        {matchedUsers.map(({ client, helper }) => (
+        {matchedUsers.map((matchedUser) => (
           <Box
-            key={client.user_id}
+            key={matchedUser.matching_id}
             borderWidth='1px'
             p={4}
             borderRadius='md'
             w='100%'
           >
             <Text>
-              <strong>Client:</strong> {client.first_name} ({client.City.name})
+              <strong>Client:</strong> {matchedUser.client_first_name} (
+              {matchedUser.city_name})
             </Text>
             <Text>
-              <strong>Helper:</strong> {helper.first_name} ({helper.City.name})
+              <strong>Helper:</strong> {matchedUser.helper_first_name} (
+              {matchedUser.city_name})
             </Text>
             <Button
               mt={2}
               colorScheme='red'
               onClick={() =>
-                handleUnassignHelper(client.user_id!, helper.user_id!)
+                handleUnassignHelper(
+                  matchedUser.client_id!,
+                  matchedUser.helper_id!
+                )
               }
             >
               Unassign Helper

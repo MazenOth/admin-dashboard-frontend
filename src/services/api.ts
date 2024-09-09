@@ -6,8 +6,10 @@ const api = axios.create({
 });
 
 // Users Endpoints
-export const getUsers = (roleName: { roleName: string }) =>
-  api.get('/users', { params: roleName });
+export const getUsers = (
+  role: { role_name: string },
+  paginationOptions: { size: number; page: number }
+) => api.get('/users', { params: { ...role, ...paginationOptions } });
 export const createUser = (user: User) => api.post('/users', user);
 export const updateUser = (id: number, user: User) =>
   api.put(`/users/${id}`, user);

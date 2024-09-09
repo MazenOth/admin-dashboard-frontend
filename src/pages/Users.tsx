@@ -14,13 +14,14 @@ import {
 import { getUsers, updateUser, deleteUser, createUser } from '../services/api';
 import { User } from '../types';
 import UserForm from '../components/Users/UserForm';
+import { AxiosResponse } from 'axios';
 
 interface UserProps {
-  roleName: string;
+  role_name: string;
   heading: string;
 }
 
-const Users: React.FC<UserProps> = ({ roleName, heading }) => {
+const Users: React.FC<UserProps> = ({ role_name, heading }) => {
   const [users, setUsers] = useState<User[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -30,10 +31,12 @@ const Users: React.FC<UserProps> = ({ roleName, heading }) => {
   }, []);
 
   const fetchUsers = async () => {
-    await getUsers({ roleName: roleName.toLowerCase() })
+    const role = {role_name: role_name.toLowerCase()}
+    const paginationOptions = { page: 1, size: 10 };
+    await getUsers(role, paginationOptions)
       .then((response) => {
         setUsers(response.data);
-        console.log(response);
+        console.log(response.data);
       })
       .catch((error) => {
         throw new Error(error);
@@ -44,7 +47,7 @@ const Users: React.FC<UserProps> = ({ roleName, heading }) => {
     if (editingUser) {
       await updateUser(editingUser.user_id!, user);
     } else {
-      user.roleName = roleName.toLowerCase();
+      user.role_name = role_name.toLowerCase();
       await createUser(user);
     }
     onClose();
@@ -72,7 +75,7 @@ const Users: React.FC<UserProps> = ({ roleName, heading }) => {
         }}
         mb={4}
       >
-        Add {roleName}
+        Add {role_name}
       </Button>
       <Table variant='simple'>
         <Thead>
@@ -89,7 +92,7 @@ const Users: React.FC<UserProps> = ({ roleName, heading }) => {
             <Tr key={user.user_id}>
               <Td>{user.first_name}</Td>
               <Td>{user.phone_number}</Td>
-              <Td>{user.City.name}</Td>
+              <Td>{user.city_name}</Td>
               <Td>{user.email}</Td>
               <Td>
                 <Button
@@ -117,7 +120,7 @@ const Users: React.FC<UserProps> = ({ roleName, heading }) => {
         onClose={onClose}
         onSubmit={handleCreateOrUpdate}
         initialData={editingUser}
-        roleName={roleName}
+        role_name={role_name}
       />
     </Box>
   );

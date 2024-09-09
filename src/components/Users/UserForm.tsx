@@ -22,7 +22,7 @@ interface UserFormProps {
   onClose: () => void;
   onSubmit: (data: User) => void;
   initialData?: User | null;
-  roleName: string;
+  role_name: string;
 }
 
 const UserForm: React.FC<UserFormProps> = ({
@@ -30,7 +30,7 @@ const UserForm: React.FC<UserFormProps> = ({
   onClose,
   onSubmit,
   initialData,
-  roleName,
+  role_name,
 }) => {
   const {
     register,
@@ -42,7 +42,7 @@ const UserForm: React.FC<UserFormProps> = ({
       first_name: '',
       last_name: '',
       phone_number: '',
-      City: { name: '' },
+      city_name: '',
       email: '',
     },
   });
@@ -57,7 +57,7 @@ const UserForm: React.FC<UserFormProps> = ({
         first_name: '',
         last_name: '',
         phone_number: '',
-        City: { name: '' },
+        city_name: '',
         email: '',
       });
     }
@@ -66,7 +66,7 @@ const UserForm: React.FC<UserFormProps> = ({
   const handleFormSubmit = (data: User) => {
     onSubmit(data);
     toast({
-      title: initialData ? `${roleName} updated.` : `${roleName} created.`,
+      title: initialData ? `${role_name} updated.` : `${role_name} created.`,
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -78,7 +78,7 @@ const UserForm: React.FC<UserFormProps> = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          {initialData ? `Edit ${roleName}` : `Add ${roleName}`}
+          {initialData ? `Edit ${role_name}` : `Add ${role_name}`}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -91,19 +91,19 @@ const UserForm: React.FC<UserFormProps> = ({
                   required: 'First Name is required',
                 })}
                 isInvalid={!!errors.first_name}
-                placeholder={`Enter ${roleName.toLowerCase()} first name`}
+                placeholder={`Enter ${role_name.toLowerCase()} first name`}
               />
             </FormControl>
 
             <FormControl id='last_name' isRequired mb={4}>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel>Last Name</FormLabel>
               <Input
                 type='text'
                 {...register('last_name', {
                   required: 'Last Name is required',
                 })}
                 isInvalid={!!errors.last_name}
-                placeholder={`Enter ${roleName.toLowerCase()} last name`}
+                placeholder={`Enter ${role_name.toLowerCase()} last name`}
               />
             </FormControl>
 
@@ -113,7 +113,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 type='text'
                 {...register('phone_number', { required: 'Phone is required' })}
                 isInvalid={!!errors.phone_number}
-                placeholder={`Enter ${roleName.toLowerCase()} phone`}
+                placeholder={`Enter ${role_name.toLowerCase()} phone`}
               />
             </FormControl>
 
@@ -121,9 +121,9 @@ const UserForm: React.FC<UserFormProps> = ({
               <FormLabel>City</FormLabel>
               <Input
                 type='text'
-                {...register('City.name', { required: 'City is required' })}
-                isInvalid={!!errors.City?.name}
-                placeholder={`Enter ${roleName.toLowerCase()} city`}
+                {...register('city_name', { required: 'City is required' })}
+                isInvalid={!!errors.city_name}
+                placeholder={`Enter ${role_name.toLowerCase()} city`}
               />
             </FormControl>
 
@@ -133,7 +133,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 type='email'
                 {...register('email', { required: 'Email is required' })}
                 isInvalid={!!errors.email}
-                placeholder={`Enter ${roleName.toLowerCase()} email`}
+                placeholder={`Enter ${role_name.toLowerCase()} email`}
               />
             </FormControl>
           </form>

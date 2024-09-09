@@ -8,11 +8,11 @@ const App = () => (
     <Routes>
       <Route
         path='/clients'
-        element={<Users roleName='Client' heading='Clients Management' />}
+        element={<Users role_name='Client' heading='Clients Management' />}
       />
       <Route
         path='/helpers'
-        element={<Users roleName='Helper' heading='Helpers Management' />}
+        element={<Users role_name='Helper' heading='Helpers Management' />}
       />
       <Route path='/matching' element={<Matching />} />
     </Routes>

@@ -21,20 +21,20 @@ export const getUnmatchedClients = (paginationOptions: {
   page: number;
 }) => api.get('/matchings/unmatched/clients', { params: paginationOptions });
 export const getPotentialMatches = (
-  clientId: number,
+  client_id: number,
   paginationOptions: {
     size: number;
     page: number;
   }
 ) =>
-  api.get(`/matchings/potential/${clientId}`, {
+  api.get(`/matchings/potential/${client_id}`, {
     params: paginationOptions,
   });
 export const getMatchedUsers = (paginationOptions: {
   size: number;
   page: number;
 }) => api.get(`/matchings/users`, { params: paginationOptions });
-export const assignHelper = (id: { clientId: number; helperId: number }) =>
+export const assignHelper = (id: { client_id: number; helper_id: number }) =>
   api.post(`/matchings/assign`, id);
-export const unassignHelper = (id: { clientId: number; helperId: number }) =>
+export const unassignHelper = (id: { client_id: number; helper_id: number }) =>
   api.post(`/matchings/unassign`, id);

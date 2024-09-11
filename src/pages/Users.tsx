@@ -10,11 +10,13 @@ import {
   Td,
   Heading,
   useDisclosure,
+  Flex,
+  Spacer,
+  Text,
 } from '@chakra-ui/react';
 import { getUsers, updateUser, deleteUser, createUser } from '../services/api';
 import { User } from '../types';
 import UserForm from '../components/Users/UserForm';
-import { AxiosResponse } from 'axios';
 
 interface UserProps {
   role_name: string;
@@ -25,17 +27,24 @@ const Users: React.FC<UserProps> = ({ role_name, heading }) => {
   const [users, setUsers] = useState<User[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const size = 5;
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, role_name]);
 
   const fetchUsers = async () => {
-    const role = {role_name: role_name.toLowerCase()}
-    const paginationOptions = { page: 1, size: 10 };
+    const role = { role_name: role_name.toLowerCase() };
+    const paginationOptions = { page: page, size: size };
     await getUsers(role, paginationOptions)
       .then((response) => {
-        setUsers(response.data);
+        setUsers(response.data.users);
+        setTotalPages(
+          Math.ceil((response.data.total ? response.data.total : size) / size)
+        );
+
         console.log(response.data);
       })
       .catch((error) => {
@@ -62,6 +71,12 @@ const Users: React.FC<UserProps> = ({ role_name, heading }) => {
   const handleDelete = async (id: number) => {
     await deleteUser(id);
     fetchUsers();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
   };
 
   return (
@@ -115,6 +130,28 @@ const Users: React.FC<UserProps> = ({ role_name, heading }) => {
           ))}
         </Tbody>
       </Table>
+      {/* Pagination Controls */}
+      <Flex mt={4} alignItems='center'>
+        <Button
+          size='sm'
+          onClick={() => handlePageChange(page - 1)}
+          isDisabled={page === 1}
+        >
+          Previous
+        </Button>
+        <Spacer />
+        <Text>
+          Page {page} of {totalPages}
+        </Text>
+        <Spacer />
+        <Button
+          size='sm'
+          onClick={() => handlePageChange(page + 1)}
+          isDisabled={page === totalPages}
+        >
+          Next
+        </Button>
+      </Flex>
       <UserForm
         isOpen={isOpen}
         onClose={onClose}

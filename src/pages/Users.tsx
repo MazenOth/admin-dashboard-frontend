@@ -32,6 +32,10 @@ const Users: React.FC<UserProps> = ({ role_name, heading }) => {
   const size = 5;
 
   useEffect(() => {
+    setPage(1);
+  }, [role_name]);
+
+  useEffect(() => {
     fetchUsers();
   }, [page, role_name]);
 

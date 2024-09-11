@@ -24,14 +24,21 @@ const Matching: React.FC = () => {
   const [potentialHelpers, setPotentialHelpers] = useState<User[]>([]);
   const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const [loadingUnmatched, setLoadingUnmatched] = useState(false);
+  const [loadingPotential, setLoadingPotential] = useState(false);
+  const [loadingMatched, setLoadingMatched] = useState(false);
+
   const toast = useToast();
 
   // Pagination states
   const [clientPage, setClientPage] = useState(1);
   const [helperPage, setHelperPage] = useState(1);
   const [matchedPage, setMatchedPage] = useState(1);
-  const limit = 10; // Set the number of items per page
+  const [totalClients, setTotalClients] = useState(0);
+  const [totalHelpers, setTotalHelpers] = useState(0);
+  const [totalMatched, setTotalMatched] = useState(0);
+  const size = 5;
 
   useEffect(() => {
     fetchUnmatchedClients(clientPage);
@@ -48,19 +55,14 @@ const Matching: React.FC = () => {
   }, [matchedPage]);
 
   const fetchUnmatchedClients = async (page: number) => {
-    setLoading(true);
+    setLoadingUnmatched(true);
     try {
-      await getUnmatchedClients({
+      const response = await getUnmatchedClients({
         page: page,
-        size: limit,
-      })
-        .then((response) => {
-          setUnmatchedClients(response.data);
-          console.log(response);
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
+        size: size,
+      });
+      setUnmatchedClients(response.data.clients);
+      setTotalClients(response.data.total || 0);
     } catch (error) {
       toast({
         title: 'Error fetching unmatched clients.',
@@ -68,24 +70,19 @@ const Matching: React.FC = () => {
         isClosable: true,
       });
     } finally {
-      setLoading(false);
+      setLoadingUnmatched(false);
     }
   };
 
-  const fetchPotentialHelpers = async (clientId: number, page: number) => {
-    setLoading(true);
+  const fetchPotentialHelpers = async (client_id: number, page: number) => {
+    setLoadingPotential(true);
     try {
-      await getPotentialMatches(clientId, {
+      const response = await getPotentialMatches(client_id, {
         page: page,
-        size: limit,
-      })
-        .then((response) => {
-          setPotentialHelpers(response.data);
-          console.log(response);
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
+        size: size,
+      });
+      setPotentialHelpers(response.data.potentialHelpers);
+      setTotalHelpers(response.data.total || 0);
     } catch (error) {
       toast({
         title: 'Error fetching potential matches.',
@@ -93,23 +90,19 @@ const Matching: React.FC = () => {
         isClosable: true,
       });
     } finally {
-      setLoading(false);
+      setLoadingPotential(false);
     }
   };
 
   const fetchMatchedUsers = async (page: number) => {
-    setLoading(true);
+    setLoadingMatched(true);
     try {
-      await getMatchedUsers({
+      const response = await getMatchedUsers({
         page: page,
-        size: limit,
-      })
-        .then((response) => {
-          setMatchedUsers(response.data);
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
+        size: size,
+      });
+      setMatchedUsers(response.data.matchings);
+      setTotalMatched(response.data.total || 0);
     } catch (error) {
       toast({
         title: 'Error fetching matched users.',
@@ -117,15 +110,15 @@ const Matching: React.FC = () => {
         isClosable: true,
       });
     } finally {
-      setLoading(false);
+      setLoadingMatched(false);
     }
   };
 
-  const handleAssignHelper = async (helperId: number) => {
+  const handleAssignHelper = async (helper_id: number) => {
     if (!selectedClient) return;
 
     try {
-      await assignHelper({ clientId: selectedClient, helperId: helperId });
+      await assignHelper({ client_id: selectedClient, helper_id: helper_id });
       toast({
         title: 'Helper assigned successfully.',
         status: 'success',
@@ -144,9 +137,9 @@ const Matching: React.FC = () => {
     }
   };
 
-  const handleUnassignHelper = async (clientId: number, helperId: number) => {
+  const handleUnassignHelper = async (client_id: number, helper_id: number) => {
     try {
-      await unassignHelper({ clientId: clientId, helperId: helperId });
+      await unassignHelper({ client_id: client_id, helper_id: helper_id });
       toast({
         title: 'Helper unassigned successfully.',
         status: 'success',
@@ -163,40 +156,53 @@ const Matching: React.FC = () => {
     }
   };
 
+  const getPageCount = (total: number) => Math.max(1, Math.ceil(total / size));
+
   return (
     <Box p={4}>
       <Heading mb={6}>Matching Clients with Helpers</Heading>
 
-      {loading && <Spinner size='xl' />}
-
       {/* Unmatched Clients Section */}
       <VStack spacing={4} align='start' mb={6}>
         <Text fontWeight='bold'>Select a Client:</Text>
-        <Select
-          placeholder='Select unassigned client'
-          onChange={(e) => {
-            const clientId = parseInt(e.target.value, 10);
-            setSelectedClient(clientId);
-            setHelperPage(1); // Reset helper page when a new client is selected
-          }}
-        >
-          {unmatchedClients.map((client) => (
-            <option key={client.client_id} value={client.client_id}>
-              {client.first_name} - {client.email} - {client.city_name}
-            </option>
-          ))}
-        </Select>
+        {loadingUnmatched ? (
+          <Spinner size='xl' />
+        ) : (
+          <Select
+            placeholder='Select unassigned client'
+            onChange={(e) => {
+              const client_id = parseInt(e.target.value, 10);
+              setSelectedClient(client_id);
+              setHelperPage(1);
+            }}
+          >
+            {unmatchedClients.map((client) => (
+              <option key={client.client_id} value={client.client_id}>
+                {client.first_name} - {client.email} - {client.city_name}
+              </option>
+            ))}
+          </Select>
+        )}
 
         {/* Pagination Controls for Unmatched Clients */}
         <HStack spacing={4}>
           <Button
             onClick={() => setClientPage((prev) => Math.max(prev - 1, 1))}
-            disabled={clientPage === 1}
+            isDisabled={clientPage === 1}
           >
             Previous
           </Button>
-          <Text>Page {clientPage}</Text>
-          <Button onClick={() => setClientPage((prev) => prev + 1)}>
+          <Text>
+            Page {clientPage} of {getPageCount(totalClients)}
+          </Text>
+          <Button
+            onClick={() =>
+              setClientPage((prev) =>
+                prev < getPageCount(totalClients) ? prev + 1 : prev
+              )
+            }
+            isDisabled={clientPage === getPageCount(totalClients)}
+          >
             Next
           </Button>
         </HStack>
@@ -205,25 +211,38 @@ const Matching: React.FC = () => {
         {potentialHelpers.length > 0 && (
           <VStack spacing={2} align='start'>
             <Text fontWeight='bold'>Potential Helpers:</Text>
-            {potentialHelpers.map((helper) => (
-              <Button
-                key={helper.user_id}
-                onClick={() => handleAssignHelper(helper.helper_id!)}
-              >
-                {helper.first_name} - {helper.email}
-              </Button>
-            ))}
+            {loadingPotential ? (
+              <Spinner size='xl' />
+            ) : (
+              potentialHelpers.map((helper) => (
+                <Button
+                  key={helper.user_id}
+                  onClick={() => handleAssignHelper(helper.helper_id!)}
+                >
+                  {helper.first_name} - {helper.email}
+                </Button>
+              ))
+            )}
 
             {/* Pagination Controls for Potential Helpers */}
             <HStack spacing={4}>
               <Button
                 onClick={() => setHelperPage((prev) => Math.max(prev - 1, 1))}
-                disabled={helperPage === 1}
+                isDisabled={helperPage === 1}
               >
                 Previous
               </Button>
-              <Text>Page {helperPage}</Text>
-              <Button onClick={() => setHelperPage((prev) => prev + 1)}>
+              <Text>
+                Page {helperPage} of {getPageCount(totalHelpers)}
+              </Text>
+              <Button
+                onClick={() =>
+                  setHelperPage((prev) =>
+                    prev < getPageCount(totalHelpers) ? prev + 1 : prev
+                  )
+                }
+                isDisabled={helperPage === getPageCount(totalHelpers)}
+              >
                 Next
               </Button>
             </HStack>
@@ -234,47 +253,60 @@ const Matching: React.FC = () => {
       {/* Matched Users Section */}
       <VStack spacing={4} align='start'>
         <Text fontWeight='bold'>Current Matches:</Text>
-        {matchedUsers.map((matchedUser) => (
-          <Box
-            key={matchedUser.matching_id}
-            borderWidth='1px'
-            p={4}
-            borderRadius='md'
-            w='100%'
-          >
-            <Text>
-              <strong>Client:</strong> {matchedUser.client_first_name} (
-              {matchedUser.city_name})
-            </Text>
-            <Text>
-              <strong>Helper:</strong> {matchedUser.helper_first_name} (
-              {matchedUser.city_name})
-            </Text>
-            <Button
-              mt={2}
-              colorScheme='red'
-              onClick={() =>
-                handleUnassignHelper(
-                  matchedUser.client_id!,
-                  matchedUser.helper_id!
-                )
-              }
+        {loadingMatched ? (
+          <Spinner size='xl' />
+        ) : (
+          matchedUsers.map((matchedUser) => (
+            <Box
+              key={matchedUser.matching_id}
+              borderWidth='1px'
+              p={4}
+              borderRadius='md'
+              w='100%'
             >
-              Unassign Helper
-            </Button>
-          </Box>
-        ))}
+              <Text>
+                <strong>Client:</strong> {matchedUser.client_first_name} (
+                {matchedUser.city_name})
+              </Text>
+              <Text>
+                <strong>Helper:</strong> {matchedUser.helper_first_name} (
+                {matchedUser.city_name})
+              </Text>
+              <Button
+                mt={2}
+                colorScheme='red'
+                onClick={() =>
+                  handleUnassignHelper(
+                    matchedUser.client_id!,
+                    matchedUser.helper_id!
+                  )
+                }
+              >
+                Unassign Helper
+              </Button>
+            </Box>
+          ))
+        )}
 
         {/* Pagination Controls for Matched Users */}
         <HStack spacing={4}>
           <Button
             onClick={() => setMatchedPage((prev) => Math.max(prev - 1, 1))}
-            disabled={matchedPage === 1}
+            isDisabled={matchedPage === 1}
           >
             Previous
           </Button>
-          <Text>Page {matchedPage}</Text>
-          <Button onClick={() => setMatchedPage((prev) => prev + 1)}>
+          <Text>
+            Page {matchedPage} of {getPageCount(totalMatched)}
+          </Text>
+          <Button
+            onClick={() =>
+              setMatchedPage((prev) =>
+                prev < getPageCount(totalMatched) ? prev + 1 : prev
+              )
+            }
+            isDisabled={matchedPage === getPageCount(totalMatched)}
+          >
             Next
           </Button>
         </HStack>

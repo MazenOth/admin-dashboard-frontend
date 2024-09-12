@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   FormControl,
@@ -11,10 +11,12 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   useToast,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { User } from '../../types';
+import { getCities } from '../../services/api';
 
 interface UserFormProps {
   isOpen: boolean;
@@ -46,6 +48,10 @@ const UserForm: React.FC<UserFormProps> = ({
     },
   });
 
+  const [cities, setCities] = useState<
+    { city_id: number; city_name: string }[]
+  >([]);
+
   const toast = useToast();
 
   useEffect(() => {
@@ -61,6 +67,23 @@ const UserForm: React.FC<UserFormProps> = ({
       });
     }
   }, [initialData, reset]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await getCities();
+        setCities(response.data);
+      } catch (error: any) {
+        toast({
+          title: 'Error fetching cities.',
+          status: 'error',
+          isClosable: true,
+        });
+      }
+    };
+
+    fetchCities();
+  }, [toast]);
 
   const handleFormSubmit = (data: User) => {
     onSubmit(data);
@@ -118,12 +141,17 @@ const UserForm: React.FC<UserFormProps> = ({
 
             <FormControl id='city' isRequired mb={4}>
               <FormLabel>City</FormLabel>
-              <Input
-                type='text'
+              <Select
                 {...register('city_name', { required: 'City is required' })}
+                placeholder='Select city'
                 isInvalid={!!errors.city_name}
-                placeholder={`Enter ${role_name.toLowerCase()} city`}
-              />
+              >
+                {cities.map((city) => (
+                  <option key={city.city_id} value={city.city_name}>
+                    {city.city_name}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
 
             <FormControl id='email' isRequired mb={4}>

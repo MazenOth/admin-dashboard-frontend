@@ -45,7 +45,7 @@ const Layout = ({ children }: LayoutProps) => {
         onOverlayClick={onClose}
         size='xs'
       >
-        <DrawerContent bg='gray.800'>
+        <DrawerContent bg='gray.800' color='white'>
           <NavMenu onClose={onClose} />
         </DrawerContent>
       </Drawer>

@@ -38,3 +38,6 @@ export const assignHelper = (id: { client_id: number; helper_id: number }) =>
   api.post(`/matchings/assign`, id);
 export const unassignHelper = (id: { client_id: number; helper_id: number }) =>
   api.post(`/matchings/unassign`, id);
+
+// Cities Endpoints
+export const getCities = () => api.get('/cities');
